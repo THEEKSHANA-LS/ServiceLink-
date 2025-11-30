@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from "dotenv";
 import mongoose from 'mongoose';
+import userRouter from './routes/userRouter.js';
 
 const app = express();
 
@@ -23,6 +24,9 @@ mongoose.connect(connectionString).then(
         console.log("Database connection failed");
     }
 );
+
+//start api routes...
+app.use("/api/users", userRouter);
 
 //start express server...
 app.listen(5000, () => {

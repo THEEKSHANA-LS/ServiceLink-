@@ -26,9 +26,11 @@ const userSchema = new mongoose.Schema(
         },
         phone : {
             type : String,
+            default : null
         },
         address : {
             type : String,
+            default : null
         },
         createdAt : {
             type : Date,

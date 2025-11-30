@@ -11,8 +11,8 @@ const serviceSchema = new mongoose.Schema(
             type : String,
             required : true
         },
-        icon : {
-            type : Image,
+        image : {
+            type : String,
             default : null
         },
         createdAt : {
