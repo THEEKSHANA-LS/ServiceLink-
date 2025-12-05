@@ -1,126 +1,35 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
-//register function...
-export function createUser(req, res){
+//update user details... /api/users/update-me
+export async function updateUser(req, res){
+    if(!req.user){
+        return res.status(401).json({ message : "Unauthorized."});
+    }
 
-    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+    try{
 
-    const user = new User(
-        {
-            fullName : req.body.fullName,
-            email : req.body.email,
-            password : hashedPassword,
-            role : req.body.role
-        }
-    )
+        const email = req.user.email;
+        const updates = {};
 
-    user.save().then(
-        () => {
-            res.status(200).json({
-                message : "User created successfully."
-            })
+        //update name...
+        if(req.body.fullName) updates.fullName = req.body.fullName;
+
+        //update image...
+        if(req.body.image) updates.image = req.body.image;
+
+        //update password...(only if provided)
+        if(req.body.password){
+            const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+            updates.password = hashedPassword;
         }
-    ).catch(
-        () => {
-            res.status(500).json({
-                message : "Failed to create user."
-            })
-        }
-    )
+
+        await User.updateOne({ email : email }, { $set : updates });
+
+        res.status(200).json({ message : "Profile updated successfully."});
+    } catch(error){
+        console.error("Error updating user profile:", error);
+        res.status(500).json({
+            message : "Failed to update profile."
+        });
+    }
 };
-
-//login function...
-export function loginUser(req, res){
-    User.findOne(
-        {
-            email : req.body.email
-        }
-    ).then(
-        (user) => {
-            if(user == null){
-                res.status(404).json(
-                    {
-                        message : "User not found."
-                    }
-                )
-            }else{
-                if(user.isBlocked){
-                    res.status(403).json({
-                        message : "Your account has been blocked."
-                    });
-                    return;
-                }
-                const isPasswordMatching = bcrypt.compareSync(req.body.password, user.password);
-                if(isPasswordMatching){
-                    const token = jwt.sign(
-                        {
-                            email : user.email,
-                            fullName : user.fullName,
-                            role : user.role,
-                            image : user.image
-                        },
-                        process.env.JWT_SECRET
-                    )
-
-                    res.json({
-                        message : "Login successful.",
-                        token : token,
-                        user : {
-                            email : user.email,
-                            fullName : user.fullName,
-                            role : user.role,
-                        }
-                    })
-                } else{
-                    res.status(401).json({
-                        message : "Invaild Password."
-                    })
-                }
-            }
-        }
-    )
-};
-
-//Authorization part... 
-
-//for admin...
-export function isAdmin(req){
-    if(req.user == null){
-        return false;
-    }
-
-    if(req.user.role != "admin"){
-        return false;
-    }
-
-    return true;
-};
-
-//for Privider...
-export function isProvider(req) {
-    if (req.user == null) {
-        return false;
-    }
-
-    if (req.user.role != "provider") {
-        return false;
-    }
-
-    return true;
-};
-
-//for user...
-export function isUser(req){
-    if(req.user == null){
-        return false;
-    }
-
-    if(req.user.role != "user"){
-        return false;
-    }
-
-    return true;
-}
-

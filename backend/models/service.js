@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const serviceSchema = new mongoose.Schema(
     {
+        provider : {
+            type : String,
+            ref : "User",
+        },
         name : {
             type : String,
             required : true,
@@ -9,6 +13,10 @@ const serviceSchema = new mongoose.Schema(
         },
         description : {
             type : String,
+            required : true
+        },
+        payPerHour : {
+            type : Number,
             required : true
         },
         image : {

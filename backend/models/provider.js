@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 
 const providerSchema = new mongoose.Schema({
-  userId: { 
+  providerId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User', 
     required: true 
 },
   servicesOffered: [{ 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Service' 
+    ref: 'Service', 
+    default : null,
 }],
   experience: {
     type : String,
