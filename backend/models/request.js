@@ -1,21 +1,10 @@
 import mongoose from "mongoose";
 
-
-const requestSchema = new mongoose.model(
+const requestSchema = new mongoose.Schema(
     {
-        userId : {
-            type : mongoose.Schema.Types.ObjectId,
-            ref : 'User',
-            required : true
-        },
-        providerId : {
-            type : mongoose.Schema.Types.ObjectId,
-            ref : "Provider",
-            default : null
-        },
         serviceId : {
             type : mongoose.Schema.Types.ObjectId,
-            ref : 'Service',
+            ref : "Service",
             required : true
         },
         description : {
@@ -30,6 +19,10 @@ const requestSchema = new mongoose.model(
             type : String,
             required : true
         },
+        time : {
+            type : String,
+            required : true
+        },
         status : {
             type : String,
             enum : ['pending', 'accepted', 'in-progress', 'completed', 'cancelled'],
@@ -41,7 +34,17 @@ const requestSchema = new mongoose.model(
         },
         updatedAt : {
             type : Date
-        }
+        },
+        customer : {
+            type : String,
+            required : true
+        },
+        provider : {
+            type : String,
+            required : true
+        },
+
+        //{ timestamps : true } this use instead of createdAt and updateAt /*
     }
 )
 

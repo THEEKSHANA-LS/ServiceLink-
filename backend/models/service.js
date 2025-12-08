@@ -4,12 +4,11 @@ const serviceSchema = new mongoose.Schema(
     {
         provider : {
             type : String,
-            ref : "User",
+            required : true
         },
         name : {
             type : String,
             required : true,
-            unoique : true
         },
         description : {
             type : String,
