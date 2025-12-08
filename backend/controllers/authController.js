@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import Service from "../models/service.js";
 
 dotenv.config();
 
@@ -72,11 +73,6 @@ export function login(req, res){
                     res.json({
                         message : "Login successful.",
                         token : token,
-                        user : {
-                            email : user.email,
-                            fullName : user.fullName,
-                            role : user.role,
-                        }
                     })
                 } else{
                     res.status(401).json({
@@ -88,16 +84,56 @@ export function login(req, res){
     )
 };
 
-//get user details... /api/auth/me
-export function userProfile(req, res){
-    if(req.user == null){
-        res.status(401).json({
+//get user profile...
+export async function userProfile(req, res){
+    
+    // Check if user is authenticated (Correct)
+    if (req.user == null) {
+        return res.status(401).json({
             message : "Unauthorized."
-        })
-        return;
-    } else{
-        res.json(
-            req.user
-        )
+        });
+    } 
+
+    const baseUserData = {
+        email: req.user.email,
+        fullName: req.user.fullName,
+        role: req.user.role,
+        phone: req.user.phone,
+        address: req.user.address,
+        image: req.user.image,
+    };
+
+    if (req.user.role === "customer") {
+        // Customer: Simple return of token data
+        return res.json(baseUserData);
     }
+    
+    if (req.user.role === "provider") {
+        try {
+            // 2. AWAIT the database query and assign the result
+            const providerServices = await Service.find({ 
+                provider : req.user.email // Assuming your Service model stores email (String)
+            }).select('name payPerHour description image'); // Select only non-sensitive fields
+            
+            // 3. Construct and return the combined profile
+            const providerProfile = {
+                ...baseUserData,
+                // Add the fields that were moved into the User model:
+                servicesOffered: providerServices, // <-- Use the fetched data
+                experience: req.user.experience,
+                // If you had rating/verified in the User model, include them here too
+            };
+            
+            return res.json(providerProfile);
+
+        } catch (error) {
+            console.error("Error fetching provider services:", error);
+            return res.status(500).json({
+                message: "Failed to retrieve provider details."
+            });
+        }
+    }
+    
+    // Fallback if role is neither 'customer' nor 'provider'
+    return res.json(baseUserData);
 };

@@ -35,8 +35,18 @@ const userSchema = new mongoose.Schema(
         createdAt : {
             type : Date,
             default : Date.now
-        }
-        
+        },
+
+        //related to provider only...
+        servicesOffered: [{ 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Service', 
+            default : [],
+        }],
+        experience: {
+            type : String,
+            default : null
+        },
     }
 )
 
